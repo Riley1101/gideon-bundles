@@ -9,6 +9,7 @@ import PQueue from "p-queue";
 
 /**
  * @typedef {{id:number,filePath:string}} Asset;
+ * @typedef {Function(Asset)} Job;
  */
 
 const log = {
@@ -28,6 +29,14 @@ let pId = 0;
 const assetGraph = new Map();
 
 const pQueue = new PQueue();
+
+/**
+ * @description To add asset Jobs to queue
+ * @param {Job} job Callback to be add to Queue
+ */
+async function addJobTopQueue(job) {
+  pQueue.add(() => job);
+}
 
 /**
  * @description Function to get babel configuration file and create a Babel File
@@ -58,8 +67,8 @@ async function generateAst(contents) {
 /**
  * @param {Asset} path Asset asset path
  */
-async function processAsset(path) {
-  const { id, filePath } = path;
+async function processAsset(asset) {
+  const { id, filePath } = asset;
   const fileContents = await readFile(filePath);
   const ast = generateAst(fileContents);
   const pId = pId++;
@@ -74,14 +83,18 @@ async function createAsset(filePath) {
   const id = pId++;
   const asset = { id, filePath };
   assetGraph.set(filePath, asset);
+  addJobTopQueue(() => createAsset(asset));
   return pQueue.onIdle();
 }
 
 const ENTRY_FILE_PATH = "./";
 
+/**
+ * @description Process all assets files from entry
+ */
 async function processAssets() {
-  let entryAssets = createAsset(ENTRY_FILE_PATH);
-  console.log(entryAssets);
+  let _ = await createAsset(ENTRY_FILE_PATH);
+  console.log(pQueue);
 }
 
 async function main() {
