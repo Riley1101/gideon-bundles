@@ -1,11 +1,15 @@
-import * as babylon from "babylon";
 import _traverse from "babel-traverse";
+import chalk from "chalk";
 import fs from "fs";
 import { findUp } from "find-up";
 import { mkdirp } from "mkdirp";
 import { promisify } from "util";
-import chalk from "chalk";
-import { transformFileSync } from "@babel/core";
+import { transformFileSync, parse } from "@babel/core";
+import PQueue from "p-queue";
+
+/**
+ * @typedef {{id:number,filePath:string}} Asset;
+ */
 
 const log = {
   info: (message) => console.log(`INFO : ${chalk.green(message)} \n`),
@@ -13,14 +17,22 @@ const log = {
   warn: (message) => console.log(`WARN : ${chalk.red(message)} \n`),
 };
 
-const code = `function square(n) {
-  return n * n;
-}`;
-
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const mkdir = promisify(mkdirp);
+let pId = 0;
 
+/**
+ * @type {Map<string,Asset>} Asset graph
+ * */
+const assetGraph = new Map();
+
+const pQueue = new PQueue();
+
+/**
+ * @description Function to get babel configuration file and create a Babel File
+ * @returns {BabelFileResult}  parsed BabelFileResult
+ */
 async function getBabelConfig() {
   const bableConfigFileName = ".babelrc";
   try {
@@ -36,16 +48,46 @@ async function getBabelConfig() {
   }
 }
 
+/**
+ * @param {string} contents JS file contents
+ */
+async function generateAst(contents) {
+  return parse(contents);
+}
+
+/**
+ * @param {Asset} path Asset asset path
+ */
+async function processAsset(path) {
+  const { id, filePath } = path;
+  const fileContents = await readFile(filePath);
+  const ast = generateAst(fileContents);
+  const pId = pId++;
+}
+
+/**
+ * @description create an asset to add into Pqueue
+ * @param {string} filePath file path push to queue
+ * @returns {Promise<void>}
+ */
+async function createAsset(filePath) {
+  const id = pId++;
+  const asset = { id, filePath };
+  assetGraph.set(filePath, asset);
+  return pQueue.onIdle();
+}
+
+const ENTRY_FILE_PATH = "./";
+
+async function processAssets() {
+  let entryAssets = createAsset(ENTRY_FILE_PATH);
+  console.log(entryAssets);
+}
+
 async function main() {
-  let babel = await getBabelConfig();
+  const babel = await getBabelConfig();
+  const pA = await processAssets();
+  console.log(pA);
 }
 
 await main();
-
-//traverse(ast, {
-//  enter(path) {
-//    if (path.isIdentifier({ name: "n" })) {
-//      path.node.name = "x";
-//    }
-//  },
-//});
