@@ -1,11 +1,15 @@
 import _traverse from "babel-traverse";
 import chalk from "chalk";
 import fs from "fs";
+import path from "path";
 import { findUp } from "find-up";
 import { mkdirp } from "mkdirp";
 import { promisify } from "util";
 import { transformFileSync, parse } from "@babel/core";
+import resolveFrom from "resolve-from";
 import PQueue from "p-queue";
+
+const traverse = _traverse.default;
 
 /**
  * @typedef {{id:number,filePath:string}} Asset;
@@ -60,21 +64,47 @@ async function getBabelConfig() {
 /**
  * @param {string} contents JS file contents
  */
-async function generateAst(contents) {
-  return parse(contents);
+function generateAst(contents) {
+  return parse(contents, {
+    sourceType: "module",
+  });
 }
 
 /**
  * @param {Asset} path Asset asset path
  */
 async function processAsset(asset) {
-  if (!asset.lenght) {
+  if (!asset) {
     return;
   }
   const { id, filePath } = asset;
-  const fileContents = await readFile(filePath);
+  const fileContents = await readFile(filePath, {
+    encoding: "utf8",
+  }).catch((e) => {
+    log.error(e);
+  });
   const ast = generateAst(fileContents);
-  const pId = pId++;
+
+  const dependencyRequests = [];
+
+  /**@type {Map<string,any>} */
+  const dependencyMap = new Map();
+
+  traverse(ast, {
+    ImportDeclaration: ({ node }) => {
+      dependencyRequests.push(node.source.value);
+    },
+  });
+
+  dependencyRequests.forEach((moduleRequest, index) => {
+    const srcDir = path.dirname(filePath);
+    try {
+      const dependencyPath = resolveFrom(srcDir, moduleRequest);
+      console.log(dependencyPath, srcDir, moduleRequest);
+    } catch (error) {
+      log.error(error);
+    }
+  });
 }
 
 /**
@@ -91,7 +121,7 @@ async function createAsset(filePath) {
   return asset;
 }
 
-const ENTRY_FILE_PATH = "";
+const ENTRY_FILE_PATH = "test/index.js";
 
 /**
  * @description Process all assets files from entry

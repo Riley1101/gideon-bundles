@@ -32,6 +32,9 @@ importers:
       p-queue:
         specifier: ^8.0.1
         version: 8.0.1
+      resolve-from:
+        specifier: ^5.0.0
+        version: 5.0.0
 
 packages:
 
@@ -400,6 +403,10 @@ packages:
   repeating@2.0.1:
     resolution: {integrity: sha512-ZqtSMuVybkISo2OWvqvm7iHSWngvdaW3IpsT9/uP8v4gMi591LY6h35wdOfvQdWCKFWZWm2Y1Opp4kV7vQKT6A==}
     engines: {node: '>=0.10.0'}
+
+  resolve-from@5.0.0:
+    resolution: {integrity: sha512-qYg9KP24dD5qka9J47d0aVky0N+b4fTU89LN9iDnjB5waksiC49rvMB0PrUJQGoTmH50XPiqOvAjDfaijGxYZw==}
+    engines: {node: '>=8'}
 
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
@@ -871,6 +878,8 @@ snapshots:
   repeating@2.0.1:
     dependencies:
       is-finite: 1.1.0
+
+  resolve-from@5.0.0: {}
 
   semver@6.3.1: {}
 
