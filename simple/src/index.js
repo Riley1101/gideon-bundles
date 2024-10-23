@@ -35,7 +35,7 @@ const pQueue = new PQueue();
  * @param {Job} job Callback to be add to Queue
  */
 async function addJobTopQueue(job) {
-  pQueue.add(() => job);
+  pQueue.add(job);
 }
 
 /**
@@ -68,6 +68,9 @@ async function generateAst(contents) {
  * @param {Asset} path Asset asset path
  */
 async function processAsset(asset) {
+  if (!asset.lenght) {
+    return;
+  }
   const { id, filePath } = asset;
   const fileContents = await readFile(filePath);
   const ast = generateAst(fileContents);
@@ -77,30 +80,31 @@ async function processAsset(asset) {
 /**
  * @description create an asset to add into Pqueue
  * @param {string} filePath file path push to queue
- * @returns {Promise<void>}
+ * @returns {Promise<Asset>}
  */
 async function createAsset(filePath) {
   const id = pId++;
   const asset = { id, filePath };
   assetGraph.set(filePath, asset);
-  addJobTopQueue(() => createAsset(asset));
-  return pQueue.onIdle();
+  log.info(`Adding ${asset.filePath} to Queue \n`);
+  addJobTopQueue(() => processAsset(asset));
+  return asset;
 }
 
-const ENTRY_FILE_PATH = "./";
+const ENTRY_FILE_PATH = "";
 
 /**
  * @description Process all assets files from entry
+ * @returns {Promise<void>}
  */
 async function processAssets() {
   let _ = await createAsset(ENTRY_FILE_PATH);
-  console.log(pQueue);
+  return pQueue.onIdle();
 }
 
 async function main() {
   const babel = await getBabelConfig();
   const pA = await processAssets();
-  console.log(pA);
 }
 
 await main();
