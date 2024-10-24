@@ -12,6 +12,7 @@ import { transformFileSync, parse, traverse } from "@babel/core";
  * @typedef {{id:number,filePath:string}} Asset;
  * @typedef {function(Asset):PromiseLike<void>} Job;
  * @typedef {import("@babel/core").BabelFileResult} BabelFileResult;
+ * @typedef {import("@babel/core").TransformOptions} TransformOptions;
  * @typedef {import("@babel/core").types.Node} Node;
  */
 
@@ -118,7 +119,9 @@ async function processAsset(asset, babel) {
         assetGraph.get(dependencyPath) ||
         (await createAsset(dependencyPath, babel)); // either find the assets in graph or create new one;
       const { code } = babel;
-      console.log(babel);
+      /** @type {TransformOptions} options; */
+      // @ts-ignore
+      const options = babel.options;
     } catch (error) {
       log.error(error);
     }
