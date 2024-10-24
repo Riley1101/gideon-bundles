@@ -1,5 +1,4 @@
 import PQueue from "p-queue";
-import * as _traverse from "@babel/traverse";
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
@@ -7,16 +6,13 @@ import resolveFrom from "resolve-from";
 import { findUp } from "find-up";
 import { mkdirp } from "mkdirp";
 import { promisify } from "util";
-import { transformFileSync, parse } from "@babel/core";
-
-const traverse = _traverse.default;
-console.log(_traverse);
+import { transformFileSync, parse, traverse } from "@babel/core";
 
 /**
  * @typedef {{id:number,filePath:string}} Asset;
  * @typedef {function(Asset):PromiseLike<void>} Job;
- * @typedef {import("@babel/core").BabelFileResult} BabelFileResult
- * @typedef {import("@babel/core").types.Node} Node
+ * @typedef {import("@babel/core").BabelFileResult} BabelFileResult;
+ * @typedef {import("@babel/core").types.Node} Node;
  */
 
 const log = {
@@ -69,14 +65,13 @@ async function getBabelConfig() {
 
 /**
  * @param {string} contents JS file contents
- * @returns {Node}
+ * @returns {Node | null}
  */
 function generateAst(contents) {
   let p = parse(contents, {
     sourceType: "module",
   });
-  console.log(p);
-  return p;
+  return /* @type {Node}*/ p;
 }
 
 /**
@@ -96,6 +91,10 @@ async function processAsset(asset, babel) {
     throw e;
   });
   const ast = generateAst(fileContents);
+  if (!ast) {
+    log.error("Ast parse error");
+    throw new Error("Missing ast");
+  }
 
   const dependencyRequests = [];
 
