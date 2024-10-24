@@ -6,10 +6,16 @@ import resolveFrom from "resolve-from";
 import { findUp } from "find-up";
 import { mkdirp } from "mkdirp";
 import { promisify } from "util";
-import { transformFileSync, parse, traverse } from "@babel/core";
+import {
+  transformFileAsync,
+  parse,
+  traverse,
+  transformFromAstAsync,
+} from "@babel/core";
 
 /**
- * @typedef {{id:number,filePath:string}} Asset;
+ * @typedef {Map<string,any>} DependencyMap;
+ * @typedef {{id:number,filePath:string,code?:string | null,dependencyMap?:DependencyMap}} Asset;
  * @typedef {function(Asset):PromiseLike<void>} Job;
  * @typedef {import("@babel/core").BabelFileResult} BabelFileResult;
  * @typedef {import("@babel/core").TransformOptions} TransformOptions;
@@ -57,7 +63,7 @@ async function getBabelConfig() {
       log.error("Missing .babelrc");
       return null;
     }
-    const transformedFile = transformFileSync(babelPath);
+    const transformedFile = await transformFileAsync(babelPath);
     return transformedFile;
   } catch (e) {
     throw log.error(e);
@@ -99,7 +105,7 @@ async function processAsset(asset, babel) {
 
   const dependencyRequests = [];
 
-  /**@type {Map<string,any>} */
+  /**@type {DependencyMap} dependencyMap */
   const dependencyMap = new Map();
 
   traverse(ast, {
@@ -118,14 +124,27 @@ async function processAsset(asset, babel) {
       const dependencyAsset =
         assetGraph.get(dependencyPath) ||
         (await createAsset(dependencyPath, babel)); // either find the assets in graph or create new one;
-      const { code } = babel;
-      /** @type {TransformOptions} options; */
-      // @ts-ignore
-      const options = babel.options;
+
+      dependencyMap.set(moduleRequest, dependencyAsset);
     } catch (error) {
       log.error(error);
     }
   });
+  const { code } = babel;
+  /** @type {TransformOptions} options; */
+  // @ts-ignore
+  const babelOptions = babel.options;
+  const { plugins, presets } = babelOptions;
+  const transformedCodeObj = await transformFromAstAsync(ast, code || "", {
+    presets,
+    plugins,
+  });
+  if (transformedCodeObj) {
+    const { code: transformCode } = transformedCodeObj;
+    asset.dependencyMap = dependencyMap;
+    asset.code = transformCode;
+  }
+  console.log(asset);
 }
 
 /**
