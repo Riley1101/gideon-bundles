@@ -90,7 +90,7 @@ async function processAsset(asset, babel) {
   if (!asset) {
     return;
   }
-  const { id, filePath } = asset;
+  const { filePath } = asset;
   const fileContents = await readFile(filePath, {
     encoding: "utf8",
   }).catch((e) => {
@@ -170,7 +170,7 @@ const ENTRY_FILE_PATH = "test/index.js";
  * @returns {Promise<void>}
  */
 async function processAssets(babel) {
-  let _ = await createAsset(ENTRY_FILE_PATH, babel);
+  await createAsset(ENTRY_FILE_PATH, babel);
   return pQueue.onIdle();
 }
 
@@ -179,7 +179,7 @@ async function main() {
   if (!babel) {
     throw new Error("Error creating bable file");
   }
-  const pA = await processAssets(babel);
+  await processAssets(babel);
   pQueue.start();
 }
 
