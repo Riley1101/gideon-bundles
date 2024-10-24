@@ -49,7 +49,7 @@ async function addJobTopQueue(job) {
  * @returns {Promise<BabelFileResult | null>}  parsed BabelFileResult
  */
 async function getBabelConfig() {
-  const bableConfigFileName = ".babelrc";
+  const bableConfigFileName = "babel.config.json";
   try {
     let babelPath = await findUp(bableConfigFileName);
     if (!babelPath) {
@@ -117,6 +117,8 @@ async function processAsset(asset, babel) {
       const dependencyAsset =
         assetGraph.get(dependencyPath) ||
         (await createAsset(dependencyPath, babel)); // either find the assets in graph or create new one;
+      const { code } = babel;
+      console.log(babel);
     } catch (error) {
       log.error(error);
     }
