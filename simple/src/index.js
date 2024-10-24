@@ -100,7 +100,6 @@ async function processAsset(asset, babel) {
 
   /**@type {Map<string,any>} */
   const dependencyMap = new Map();
-  console.log(ast);
 
   traverse(ast, {
     ImportDeclaration: ({ node }) => {
@@ -108,7 +107,7 @@ async function processAsset(asset, babel) {
     },
   });
 
-  dependencyRequests.forEach((moduleRequest, index) => {
+  dependencyRequests.forEach(async (moduleRequest) => {
     try {
       const srcDir = path.dirname(filePath);
       const dependencyPath = resolveFrom(srcDir, moduleRequest);
@@ -116,8 +115,8 @@ async function processAsset(asset, babel) {
        * @type {Asset} dependencyAsset dependency asset
        */
       const dependencyAsset =
-        assetGraph.get(dependencyPath) || createAsset(dependencyPath, babel); // either find the assets in graph or create new one;
-      console.log(dependencyAsset);
+        assetGraph.get(dependencyPath) ||
+        (await createAsset(dependencyPath, babel)); // either find the assets in graph or create new one;
     } catch (error) {
       log.error(error);
     }
