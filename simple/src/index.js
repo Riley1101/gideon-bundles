@@ -52,11 +52,15 @@ async function addJobTopQueue(job) {
 }
 
 /**
+ * Babel Config Processor
+ * */
+
+/**
  * @description Function to get babel configuration file and create a Babel File
  * @returns {Promise<BabelFileResult | null>}  parsed BabelFileResult
  */
 async function getBabelConfig() {
-  const bableConfigFileName = "babel.config.json";
+  const bableConfigFileName = ".babelrc";
   try {
     let babelPath = await findUp(bableConfigFileName);
     if (!babelPath) {
@@ -69,6 +73,10 @@ async function getBabelConfig() {
     throw log.error(e);
   }
 }
+
+/**
+ * Processing Assets and Dependency Graph
+ * */
 
 /**
  * @param {string} contents JS file contents
@@ -144,7 +152,6 @@ async function processAsset(asset, babel) {
     asset.dependencyMap = dependencyMap;
     asset.code = transformCode;
   }
-  console.log(asset);
 }
 
 /**
@@ -174,13 +181,52 @@ async function processAssets(babel) {
   return pQueue.onIdle();
 }
 
+async function packageAssetsInfoBundle() {
+  let modules = "";
+  assetGraph.forEach((assetInfo) => {
+    let mapping = {};
+    assetInfo.dependencyMap?.forEach(
+      (depAsset, key) => (mapping[key] = depAsset.id),
+    );
+    modules += `${assetInfo.id}: [ 
+    (require, module, exports) => {
+      ${assetInfo.code}
+    },
+    ${JSON.stringify(mapping)}
+  ],`;
+  });
+
+  const result = `
+  (function (modules) {
+    function require(id) {
+      const [fn, mapping] = modules[id];
+
+      function localRequire(name) {
+       return require(mapping[name]);
+      } 
+
+      const module = {exports: {}};
+
+      fn(localRequire, module, module.exports);
+
+      return module.exports;
+    }
+    require(0);
+
+  })({${modules}})
+  `;
+
+  await mkdirp("dist");
+  await writeFile("dist/bundle.js", result, "utf8");
+}
+
 async function main() {
   const babel = await getBabelConfig();
   if (!babel) {
     throw new Error("Error creating bable file");
   }
   await processAssets(babel);
-  pQueue.start();
+  await packageAssetsInfoBundle();
 }
 
 await main();
