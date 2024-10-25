@@ -1,1 +1,3 @@
-export default "Hello from Orange";
+export default function () {
+  return Math.random();
+}
