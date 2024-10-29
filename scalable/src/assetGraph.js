@@ -38,9 +38,12 @@ export function createAssetGraph() {
  * @param {string} sourcePath source Path
  * @returns {AssetNode}
  */
-export function addNodeToGraph(graph, sourcePath) {
-  const asset = createAssetNode(sourcePath);
-  if (!graph.has(sourcePath)) {
+export function insertOrNodeToGraph(graph, sourcePath) {
+  let asset = graph.get(sourcePath);
+  if (!!asset) {
+    return asset;
+  } else {
+    asset = createAssetNode(sourcePath);
     graph.set(sourcePath, asset);
   }
   return asset;
@@ -52,7 +55,7 @@ export function addNodeToGraph(graph, sourcePath) {
  * @param {string} moduleId Module Id
  * @param {string} sourcePath Entry path
  * @param {string} resolvedPath Entry path
- * @returns {AssetNode} Created asset Node
+ * @returns void;
  */
 export function addRelationBetweenNodes(
   graph,
@@ -60,15 +63,9 @@ export function addRelationBetweenNodes(
   sourcePath,
   resolvedPath,
 ) {
-  const sourceAsset = graph.get(sourcePath) || createAssetNode(sourcePath);
-  if (!graph.has(sourcePath)) {
-    graph.set(sourcePath, sourceAsset);
-  }
+  const sourceAsset =
+    graph.get(sourcePath) || insertOrNodeToGraph(graph, sourcePath);
   const resolvedAsset =
-    graph.get(resolvedPath) || createAssetNode(resolvedPath);
-  if (!graph.has(resolvedPath)) {
-    graph.set(resolvedPath, resolvedAsset);
-  }
+    graph.get(resolvedPath) || insertOrNodeToGraph(graph, resolvedPath);
   sourceAsset.depMapping[moduleId] = resolvedAsset.id;
-  return sourceAsset;
 }

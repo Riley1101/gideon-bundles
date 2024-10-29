@@ -1,15 +1,10 @@
-import {
-  addNodeToGraph,
-  addRelationBetweenNodes,
-  createAssetGraph,
-  createAssetNode,
-} from "./assetGraph.js";
+import { insertOrNodeToGraph, createAssetGraph } from "./assetGraph.js";
 
 const current_dir = process.cwd();
 
 async function main() {
   const assetGraph = createAssetGraph();
-  addNodeToGraph(assetGraph, current_dir);
+  insertOrNodeToGraph(assetGraph, current_dir);
   console.log(assetGraph);
 }
 
