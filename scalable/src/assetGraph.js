@@ -1,6 +1,6 @@
 /**
- * @typedef {Map<string,any>} AssetGraph
- * @typedef {{id: string, path: string,depMapping:Record<string, any>}} AssetNode
+ * @typedef {Map<string,AssetNode>} AssetGraph
+ * @typedef {{id: string, path: string,depMapping:Record<string, string>}} AssetNode
  */
 
 /**
@@ -31,4 +31,20 @@ export function createAssetNode(filePath) {
 export function createAssetGraph(entryPath) {
   const map = new Map();
   return map;
+}
+
+/**
+ * @description add a node to graph
+ * @param {AssetGraph} graph Graph to be added
+ * @param {string} moduleId Module Id
+ * @param {string} sourcePath Entry path
+ * @param {string} resolvedPath Entry path
+ * @returns {AssetNode} Created asset Node
+ */
+export function addNodeToGraph(graph, moduleId, sourcePath, resolvedPath) {
+  const sourceAsset = graph.get(sourcePath) || createAssetNode(sourcePath);
+  const resolvedAsset =
+    graph.get(resolvedPath) || createAssetNode(resolvedPath);
+  sourceAsset.depMapping[moduleId] = resolvedAsset.id;
+  return sourceAsset;
 }
