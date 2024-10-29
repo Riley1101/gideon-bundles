@@ -8,9 +8,11 @@ import path from "path";
 /**
  * @description Create a cache  for bundler
  */
-export const Cache = new Level(path.join(process.cwd()), {
-  valueEncoding: "string",
-});
+export function createCache() {
+  return new Level(path.join(process.cwd()), {
+    valueEncoding: "string",
+  });
+}
 
 /**
  * @param {Cache} cache Cache block
