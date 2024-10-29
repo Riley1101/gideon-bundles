@@ -1,5 +1,6 @@
 import {
-  generateAssetId,
+  addNodeToGraph,
+  addRelationBetweenNodes,
   createAssetGraph,
   createAssetNode,
 } from "./assetGraph.js";
@@ -7,9 +8,9 @@ import {
 const current_dir = process.cwd();
 
 async function main() {
-  const depGraph = createAssetGraph(current_dir);
-  const entryNode = createAssetNode(current_dir);
-  console.log(depGraph);
+  const assetGraph = createAssetGraph();
+  addNodeToGraph(assetGraph, current_dir);
+  console.log(assetGraph);
 }
 
 main();

@@ -26,25 +26,49 @@ export function createAssetNode(filePath) {
 
 /**
  * @description generating a new asset Graph
- * @param {string} entryPath  asset entry path
  */
-export function createAssetGraph(entryPath) {
+export function createAssetGraph() {
   const map = new Map();
   return map;
 }
 
 /**
- * @description add a node to graph
+ * @description Add a Node to graph
+ * @param {AssetGraph} graph
+ * @param {string} sourcePath source Path
+ * @returns {AssetNode}
+ */
+export function addNodeToGraph(graph, sourcePath) {
+  const asset = createAssetNode(sourcePath);
+  if (!graph.has(sourcePath)) {
+    graph.set(sourcePath, asset);
+  }
+  return asset;
+}
+
+/**
+ * @description add relation ship between nodes
  * @param {AssetGraph} graph Graph to be added
  * @param {string} moduleId Module Id
  * @param {string} sourcePath Entry path
  * @param {string} resolvedPath Entry path
  * @returns {AssetNode} Created asset Node
  */
-export function addNodeToGraph(graph, moduleId, sourcePath, resolvedPath) {
+export function addRelationBetweenNodes(
+  graph,
+  moduleId,
+  sourcePath,
+  resolvedPath,
+) {
   const sourceAsset = graph.get(sourcePath) || createAssetNode(sourcePath);
+  if (!graph.has(sourcePath)) {
+    graph.set(sourcePath, sourceAsset);
+  }
   const resolvedAsset =
     graph.get(resolvedPath) || createAssetNode(resolvedPath);
+  if (!graph.has(resolvedPath)) {
+    graph.set(resolvedPath, resolvedAsset);
+  }
   sourceAsset.depMapping[moduleId] = resolvedAsset.id;
   return sourceAsset;
 }
