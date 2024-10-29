@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "emittery": "^1.0.3",
-    "level": "^8.0.1"
+    "level": "^8.0.1",
+    "pqueue": "^0.3.1"
   }
 }
