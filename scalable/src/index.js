@@ -10,7 +10,9 @@ async function main() {
   const { emitter, resolve, resolveInWorkers } = createResolver();
   insertOrNodeToGraph(assetGraph, current_dir);
 
-  emitter.on("resolved", (moduleRequest) => {});
+  emitter.on("resolved", (moduleRequest) => {
+    console.log(moduleRequest);
+  });
 }
 
 main();

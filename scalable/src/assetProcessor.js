@@ -1,7 +1,17 @@
-export function process() {
-  
+import { createJobQueue } from "./resolver";
+
+/**
+ * @description Create a asset processor
+ */
+export function createAssetProsessor() {
+  const queue = createJobQueue();
+
+  return {
+    queue,
+    process: () => {},
+  };
 }
 
-export function processInWorkers() {
-  
-}
+export function process() {}
+
+export function processInWorkers() {}

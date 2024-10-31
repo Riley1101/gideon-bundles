@@ -15,7 +15,7 @@ export function createJobQueue() {
 }
 
 /**
- * @returns {{ emitter:Emittery ,resolve: (callback:any)=>void , resolveInWorkers : ()=> void }}
+ * @returns {{ emitter:Emittery ,resolve: (callback:any)=>PromiseLike<string> , resolveInWorkers : ()=> PromiseLike<string> }}
  */
 export function createResolver() {
   const emitter = createEmittery();
@@ -24,8 +24,21 @@ export function createResolver() {
   return {
     emitter,
     resolve: async (callback) => {
-      queue.add(callback);
+      return queue.add(callback);
     },
-    resolveInWorkers: async () => {},
+    resolveInWorkers: async () => {
+      return new Promise((resol, reject) => {
+        let worker = fork(path.join(__dirname, "resolveWorker.js"));
+        worker.on("message", (msg) => {
+          emitter.emit("resolve", msg);
+          resol("msg");
+          worker.kill("SIGINT");
+        });
+
+        worker.on("error", (err) => {
+          reject(err);
+        });
+      });
+    },
   };
 }

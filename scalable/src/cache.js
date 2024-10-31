@@ -10,7 +10,7 @@ import path from "path";
  */
 export function createCache() {
   return new Level(path.join(process.cwd()), {
-    valueEncoding: "string",
+    valueEncoding: "utf8",
   });
 }
 
