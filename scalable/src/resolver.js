@@ -10,12 +10,15 @@ export function createEmittery() {
   return new Emittery();
 }
 
+/**
+ * @returns {PQueue}
+ */
 export function createJobQueue() {
   return new PQueue({ concurrency: 8 });
 }
 
 /**
- * @returns {{ emitter:Emittery ,resolve: (callback:any)=>PromiseLike<string> , resolveInWorkers : ()=> PromiseLike<string> }}
+ * @returns {{emitter:Emittery ,resolve: (callback:any)=>PromiseLike<string> , resolveInWorkers : ()=> PromiseLike<string>}}
  */
 export function createResolver() {
   const emitter = createEmittery();
