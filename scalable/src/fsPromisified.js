@@ -22,3 +22,5 @@ export async function isDir(filePath) {
     return false;
   }
 }
+
+export { readFile, writeFile, appendFile, mkdirCp };
