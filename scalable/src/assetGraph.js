@@ -1,71 +1,73 @@
-/**
- * @typedef {Map<string,AssetNode>} AssetGraph
- * @typedef {{id: string, path: string,depMapping:Record<string, string>}} AssetNode
- */
+import { createCache } from "./cache";
 
-/**
- * @description generate an Asset Id while replacing current path
- * @param {string} path  asset entry path
- */
-export function generateAssetId(path) {
-  let regex = new RegExp(`^${process.cwd()}`);
-  return path.replace(regex, "");
-}
+const cache = createCache();
 
-/**
- * @param {string} filePath Asset node path
- * @returns {AssetNode}
- */
-export function createAssetNode(filePath) {
-  return {
-    id: generateAssetId(filePath),
-    path: filePath,
-    depMapping: {},
-  };
-}
-
-/**
- * @description generating a new asset Graph
- */
-export function createAssetGraph() {
-  const map = new Map();
-  return map;
-}
-
-/**
- * @description Add a Node to graph
- * @param {AssetGraph} graph
- * @param {string} sourcePath source Path
- * @returns {AssetNode}
- */
-export function insertOrNodeToGraph(graph, sourcePath) {
-  let asset = graph.get(sourcePath);
-  if (!!asset) {
-    return asset;
-  } else {
-    asset = createAssetNode(sourcePath);
-    graph.set(sourcePath, asset);
+export class AssetNode {
+  /**
+   * @param {string} filePath
+   */
+  constructor(filePath) {
+    this.id = AssetNode.generateId(filePath);
+    this.filePath = filePath;
+    this.depMapping = {};
   }
-  return asset;
+
+  /**
+   * @static
+   * @param {string} filePath
+   * @returns {string}
+   */
+  static generateId(filePath) {
+    let regex = new RegExp(`^${process.cwd()}`);
+    return filePath.replace(regex, "");
+  }
+
+  getProcessed() {
+    return cache.get(`processed:${this.filePath}`).then(
+      (processd) => {
+        return JSON.parse(processd);
+      },
+      (err) => {
+        if (err.notFound) {
+          return null;
+        }
+        throw err;
+      },
+    );
+  }
 }
 
-/**
- * @description add relation ship between nodes
- * @param {AssetGraph} graph Graph to be added
- * @param {string} moduleId Module Id
- * @param {string} sourcePath Entry path
- * @param {string} resolvedPath Entry path
- * @returns void;
- */
-export function addRelationBetweenNodes(
-  graph,
-  moduleId,
-  sourcePath,
-  resolvedPath,
-) {
-  const sourceAsset =
-    graph.get(sourcePath) || insertOrNodeToGraph(graph, sourcePath);
-  const resolvedAsset =
-    graph.get(resolvedPath) || insertOrNodeToGraph(graph, resolvedPath);
-  sourceAsset.depMapping[moduleId] = resolvedAsset.id;
+export class AssetGraph {
+  /**
+   * @param {{ entryPath: string }} filePath
+   */
+  constructor({ entryPath }) {
+    this.graph = new Map();
+    this.entryAsset = new AssetNode(entryPath);
+    this.graph.set(entryPath, this.entryAsset);
+  }
+
+  /**
+   * @param {string} filePath
+   * @returns {AssetNode}
+   */
+  get(filePath) {
+    let asset = this.graph.get(filePath);
+    if (!asset) {
+      asset = new AssetNode(filePath);
+      this.graph.set(filePath, asset);
+    }
+    return asset;
+  }
+
+  /**
+   * @param {string} sourcePath
+   * @param {string} moduleId
+   * @param {string} resolvedPath
+   */
+  addRelationship(sourcePath, moduleId, resolvedPath) {
+    const asset = this.get(sourcePath);
+    const depAsset = this.get(resolvedPath);
+    asset.depMapping[moduleId] = depAsset.id;
+  }
 }
