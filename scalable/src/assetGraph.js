@@ -1,4 +1,4 @@
-import { createCache } from "./cache";
+import { createCache } from "./cache.js";
 
 const cache = createCache();
 
@@ -35,13 +35,17 @@ export class AssetNode {
       },
     );
   }
+
+  setProcessed(processed) {
+    return cache.put(`processed:${this.filePath}`, JSON.stringify(processed));
+  }
 }
 
 export class AssetGraph {
   /**
-   * @param {{ entryPath: string }} filePath
+   * @param { string } entryPath
    */
-  constructor({ entryPath }) {
+  constructor(entryPath) {
     this.graph = new Map();
     this.entryAsset = new AssetNode(entryPath);
     this.graph.set(entryPath, this.entryAsset);
