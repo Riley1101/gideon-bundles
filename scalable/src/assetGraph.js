@@ -65,11 +65,10 @@ export class AssetGraph {
   }
 
   /**
-   * @param {string} sourcePath
-   * @param {string} moduleId
-   * @param {string} resolvedPath
+   * @param {import("./resolver.js").ModuleRequest} moduleRequest
    */
-  addRelationship(sourcePath, moduleId, resolvedPath) {
+  addRelationship(moduleRequest) {
+    const { sourcePath, resolvedPath, moduleId } = moduleRequest;
     const asset = this.get(sourcePath);
     const depAsset = this.get(resolvedPath);
     asset.depMapping[moduleId] = depAsset.id;

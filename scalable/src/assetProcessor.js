@@ -1,8 +1,8 @@
-import path from "path";
-import { fork } from "child_process";
 import Emittery from "emittery";
 import PQueue from "pqueue";
-import { AssetNode } from "./assetGraph";
+import path from "path";
+import { AssetNode } from "./assetGraph.js";
+import { fork } from "child_process";
 
 export class AssetProcessor extends Emittery {
   constructor() {
@@ -15,7 +15,7 @@ export class AssetProcessor extends Emittery {
    */
   process(asset) {
     console.log(`Processing ${asset.filePath}`);
-    return this.queue.add(() => {});
+    return this.queue.add(() => this.processInWorker(asset));
   }
 
   /**
