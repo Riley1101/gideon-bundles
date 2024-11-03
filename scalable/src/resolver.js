@@ -1,9 +1,8 @@
 import Emittery from "emittery";
 import PQueue from "p-queue";
-import path from "path";
-import { fork } from "child_process";
+import path, { dirname } from "path";
 import { fileURLToPath } from "url";
-import { dirname } from "path";
+import { fork } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -11,7 +10,6 @@ const __dirname = dirname(__filename);
 /**
  * @typedef {{moduleId:string, sourcePath: string, resolvedPath?: string}} ModuleRequest
  */
-
 export class Resolver extends Emittery {
   constructor() {
     super();

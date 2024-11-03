@@ -1,8 +1,12 @@
 import Emittery from "emittery";
 import PQueue from "p-queue";
-import path from "path";
+import path, { dirname } from "path";
 import { AssetNode } from "./assetGraph.js";
 import { fork } from "child_process";
+
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export class AssetProcessor extends Emittery {
   constructor() {

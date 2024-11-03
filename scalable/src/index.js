@@ -2,6 +2,7 @@ import { AssetGraph } from "./assetGraph.js";
 import { AssetProcessor } from "./assetProcessor.js";
 import { QueueSync } from "./QueueSync.js";
 import { Resolver } from "./resolver.js";
+import { mkdirCp } from "./fsPromisified.js";
 import chalk from "chalk";
 
 /** @typedef {import("./resolver.js").ModuleRequest} ModuleRequest */
@@ -15,8 +16,6 @@ export default class Bundler {
     this.assetGraph = new AssetGraph(entryRequest);
     this.resolver = new Resolver();
     this.assetProsessor = new AssetProcessor();
-
-    console.log(this.assetGraph);
 
     this.resolver.on(
       "resolved",
@@ -47,8 +46,13 @@ export default class Bundler {
     ]);
   }
 
+  async packagesAssetIntoBundles() {
+    await mkdirCp("./dist",undefined);
+  }
+
   async bundle() {
     await this.processAsset();
+    await this.packagesAssetIntoBundles();
   }
 
   async processAsset() {
