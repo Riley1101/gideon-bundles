@@ -60,7 +60,7 @@ async function addJobTopQueue(job) {
  * @returns {Promise<BabelFileResult | null>}  parsed BabelFileResult
  */
 async function getBabelConfig() {
-  const bableConfigFileName = "";
+  const bableConfigFileName = "babel.config.json";
   try {
     let babelPath = await findUp(bableConfigFileName);
     if (!babelPath) {

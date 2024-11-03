@@ -25,7 +25,7 @@ emittery.onAny((eventName, data) => {
  * @returns {Promise<BabelFileResult  | null>}  parsed BabelFileResult
  */
 async function getBabelConfig() {
-  const bableConfigFileName = ".babelrc.json";
+  const bableConfigFileName = ".babelrc";
   try {
     let babelPath = await findUp(bableConfigFileName);
     if (!babelPath) {

@@ -47,7 +47,7 @@ export default class Bundler {
   }
 
   async packagesAssetIntoBundles() {
-    await mkdirCp("./dist",undefined);
+    await mkdirCp("./dist", undefined);
   }
 
   async bundle() {
