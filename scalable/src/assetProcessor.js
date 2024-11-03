@@ -1,5 +1,5 @@
 import Emittery from "emittery";
-import PQueue from "pqueue";
+import PQueue from "p-queue";
 import path from "path";
 import { AssetNode } from "./assetGraph.js";
 import { fork } from "child_process";

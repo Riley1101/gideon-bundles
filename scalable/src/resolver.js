@@ -1,10 +1,15 @@
 import Emittery from "emittery";
-import PQueue from "pqueue";
+import PQueue from "p-queue";
 import path from "path";
 import { fork } from "child_process";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
- * @typedef {{moduleId:string, sourcePath: string, resolvedPath: string}} ModuleRequest
+ * @typedef {{moduleId:string, sourcePath: string, resolvedPath?: string}} ModuleRequest
  */
 
 export class Resolver extends Emittery {
@@ -26,7 +31,7 @@ export class Resolver extends Emittery {
    */
   resolveInWorker(moduleRequest) {
     return new Promise((resolve, reject) => {
-      let worker = fork(path.join(__dirname, "resolverWorker.js"));
+      let worker = fork(path.join(__dirname, "resolveWorker.js"));
       worker.on("message", (msg) => {
         this.emit("resolved", msg);
         resolve(msg);
