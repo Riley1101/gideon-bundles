@@ -1,39 +1,49 @@
-import { createEmittery, createJobQueue } from "./resolver";
-import rootPath from "path";
+import Emittery from "emittery";
+import PQueue from "p-queue";
+import path, { dirname } from "path";
+import { AssetNode } from "./assetGraph.js";
 import { fork } from "child_process";
 
-export function createAssetProsessor() {
-  const queue = createJobQueue();
-  const emitter = createEmittery();
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-  /**
-   * @param {import("./assetGraph").AssetNode} asset
-   */
-  function processInWorkers(asset) {
-    let { path } = asset;
-    return new Promise((resol, reject) => {
-      let worker = fork(rootPath.join(__dirname, "processAssetWorker.js"));
-      worker.on("message", async (msg) => {
-        let { eventName, ...res } = msg;
-        if (eventName === "finished") {
-          worker.kill("SIGINT");
-          let { data } = res;
-          await asset.setProcessed(data);
-        } else {
-          emitter.emit(eventName, rest);
-        }
-      });
-      worker.on("error", () => {
-        reject(new Error("Failed to process file" + path));
-      });
-      worker.send(path);
-    });
+export class AssetProcessor extends Emittery {
+  constructor() {
+    super();
+    this.queue = new PQueue();
   }
 
-  return {
-    queue,
-    process: (asset) => {
-      queue.add(() => processInWorkers(asset));
-    },
-  };
+  /**
+   * @param {AssetNode} asset;
+   */
+  process(asset) {
+    console.log(`Processing ${asset.filePath}`);
+    return this.queue.add(() => this.processInWorker(asset));
+  }
+
+  /**
+   * @param {AssetNode} asset;
+   */
+  processInWorker(asset) {
+    let { filePath } = asset;
+    return new Promise((resolve, reject) => {
+      let worker = fork(path.join(__dirname, "processInWorker.js"));
+      worker.on("message", async (msg) => {
+        let { eventName, ...rest } = msg;
+        if (eventName === "finished") {
+          worker.kill("SIGINT");
+          let { data } = rest;
+          await asset.setProcessed(data);
+          resolve(data);
+        } else {
+          this.emit(eventName, rest);
+        }
+      });
+      worker.on("error", (_error) => {
+        reject(new Error("Failed to process asset" + filePath));
+      });
+      worker.send(filePath);
+    });
+  }
 }

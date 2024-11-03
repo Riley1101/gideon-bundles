@@ -9,9 +9,7 @@ import path from "path";
  * @description Create a cache  for bundler
  */
 export function createCache() {
-  return new Level(path.join(process.cwd()), {
-    valueEncoding: "utf8",
-  });
+  return new Level(path.join(process.cwd(), ".bundler-cache"));
 }
 
 /**

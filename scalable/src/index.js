@@ -1,18 +1,69 @@
-import { insertOrNodeToGraph, createAssetGraph } from "./assetGraph.js";
-import { createResolver } from "./resolver.js";
-import { createCache } from "./cache.js";
+import { AssetGraph } from "./assetGraph.js";
+import { AssetProcessor } from "./assetProcessor.js";
+import { QueueSync } from "./QueueSync.js";
+import { Resolver } from "./resolver.js";
+import { mkdirCp } from "./fsPromisified.js";
+import chalk from "chalk";
 
-const cache = createCache();
-const current_dir = process.cwd();
+/** @typedef {import("./resolver.js").ModuleRequest} ModuleRequest */
+export default class Bundler {
+  /**
+   * @param {string} entryRequest entry file
+   */
+  constructor(entryRequest) {
+    this.entryRequest = entryRequest;
+    this.cwd = process.cwd();
+    this.assetGraph = new AssetGraph(entryRequest);
+    this.resolver = new Resolver();
+    this.assetProsessor = new AssetProcessor();
 
-async function main() {
-  const assetGraph = createAssetGraph();
-  const { emitter, resolve, resolveInWorkers } = createResolver();
-  insertOrNodeToGraph(assetGraph, current_dir);
+    this.resolver.on(
+      "resolved",
+      (/** @type {ModuleRequest} moduleRequest */ moduleRequest) => {
+        let { resolvedPath } = moduleRequest;
+        this.assetGraph.addRelationship(moduleRequest);
+        if (resolvedPath) {
+          let asset = this.assetGraph.get(resolvedPath);
+          this.assetProsessor.process(asset);
+        } else {
+          console.log(
+            chalk.red("resolvedPath missing for " + moduleRequest.moduleId),
+          );
+        }
+      },
+    );
 
-  emitter.on("resolved", (moduleRequest) => {
-    console.log(moduleRequest);
-  });
+    this.assetProsessor.on(
+      "foundDepRequest",
+      (/** @type {ModuleRequest} moduleRequest */ moduleRequest) => {
+        this.resolver.resolve(moduleRequest);
+      },
+    );
+
+    this.queueSync = new QueueSync([
+      this.resolver.queue,
+      this.assetProsessor.queue,
+    ]);
+  }
+
+  async packagesAssetIntoBundles() {
+    await mkdirCp("./dist", undefined);
+  }
+
+  async bundle() {
+    await this.processAsset();
+    await this.packagesAssetIntoBundles();
+  }
+
+  async processAsset() {
+    this.resolver.resolve({
+      sourcePath: this.cwd,
+      moduleId: this.entryRequest,
+    });
+    await this.queueSync.allDone();
+    console.log(chalk.green("Done Processing !"));
+  }
 }
 
-main();
+let bundler = new Bundler("./test/index.js");
+bundler.bundle();

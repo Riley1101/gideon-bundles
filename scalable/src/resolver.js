@@ -1,47 +1,44 @@
 import Emittery from "emittery";
-import PQueue from "pqueue";
-import path from "path";
+import PQueue from "p-queue";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 import { fork } from "child_process";
 
-/**
- * @description An emittery for making events async
- */
-export function createEmittery() {
-  return new Emittery();
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
- * @returns {PQueue}
+ * @typedef {{moduleId:string, sourcePath: string, resolvedPath?: string}} ModuleRequest
  */
-export function createJobQueue() {
-  return new PQueue({ concurrency: 8 });
-}
+export class Resolver extends Emittery {
+  constructor() {
+    super();
+    this.queue = new PQueue({ concurrency: 9 });
+  }
 
-/**
- * @returns {{emitter:Emittery ,resolve: (callback:any)=>PromiseLike<string> , resolveInWorkers : ()=> PromiseLike<string>}}
- */
-export function createResolver() {
-  const emitter = createEmittery();
-  const queue = createJobQueue();
+  /**
+   * @param {ModuleRequest} moduleRequest
+   */
+  async resolve(moduleRequest) {
+    console.log(`Resolving ${moduleRequest.moduleId}`);
+    this.queue.add(() => this.resolveInWorker(moduleRequest));
+  }
 
-  return {
-    emitter,
-    resolve: async (callback) => {
-      return queue.add(callback);
-    },
-    resolveInWorkers: async () => {
-      return new Promise((resol, reject) => {
-        let worker = fork(path.join(__dirname, "resolveWorker.js"));
-        worker.on("message", (msg) => {
-          emitter.emit("resolve", msg);
-          resol("msg");
-          worker.kill("SIGINT");
-        });
-
-        worker.on("error", (err) => {
-          reject(err);
-        });
+  /**
+   * @param {ModuleRequest} moduleRequest
+   */
+  resolveInWorker(moduleRequest) {
+    return new Promise((resolve, reject) => {
+      let worker = fork(path.join(__dirname, "resolveWorker.js"));
+      worker.on("message", (msg) => {
+        this.emit("resolved", msg);
+        resolve(msg);
+        worker.kill("SIGINT");
       });
-    },
-  };
+      worker.on("error", (err) => {
+        reject(err);
+      });
+      worker.send(moduleRequest);
+    });
+  }
 }
