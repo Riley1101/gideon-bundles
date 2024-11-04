@@ -4,6 +4,7 @@ import { QueueSync } from "./QueueSync.js";
 import { Resolver } from "./resolver.js";
 import { appendFile, mkdirp, writeFile } from "./fsPromisified.js";
 import chalk from "chalk";
+import path from "path";
 
 /** @typedef {import("./resolver.js").ModuleRequest} ModuleRequest */
 export default class Bundler {
@@ -48,10 +49,6 @@ export default class Bundler {
 
   async packagesAssetIntoBundles() {
     await mkdirp("./dist", undefined);
-    console.log("---------------------");
-    console.log(this.entryRequest, "entry");
-    console.log(this.assetGraph.entryAsset);
-    console.log("---------------------");
     const topWrapper = `
       (function(modules) {
         function require(id) {
@@ -109,7 +106,10 @@ export default class Bundler {
   }
 }
 
-let bundler = new Bundler(
-  "/home/arkar/projects/gideon-bundles/scalable/test/index.js",
-);
+if (process.argv.length === 2) {
+  console.error("Usage : scalable <entryPath>");
+  process.exit(1);
+}
+const entryFile = process.argv[2];
+let bundler = new Bundler(path.join(process.cwd(), entryFile));
 bundler.bundle();
