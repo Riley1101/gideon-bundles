@@ -59,7 +59,7 @@ async function addJobTopQueue(job) {
  * @returns {Promise<BabelFileResult | null>}  parsed BabelFileResult
  */
 async function getBabelConfig() {
-  const bableConfigFileName = "babel.config.json";
+  const bableConfigFileName = "babel.config.js";
   try {
     let babelPath = await findUp(bableConfigFileName);
     if (!babelPath) {
@@ -168,8 +168,12 @@ async function createAsset(filePath, babel) {
   return asset;
 }
 
-const ENTRY_FILE_PATH = "test/index.js";
-
+if (process.argv.length === 2) {
+  console.error("Usage : scalable <entryPath>");
+  process.exit(1);
+}
+const entryFile = process.argv[2];
+const ENTRY_FILE_PATH = path.join(process.cwd(), entryFile);
 /**
  * @description Process all assets files from entry
  * @param {BabelFileResult} babel Babel instance

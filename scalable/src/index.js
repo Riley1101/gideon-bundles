@@ -5,6 +5,7 @@ import { Resolver } from "./resolver.js";
 import { appendFile, mkdirp, writeFile } from "./fsPromisified.js";
 import chalk from "chalk";
 import path from "path";
+import * as register from "@babel/register";
 
 /** @typedef {import("./resolver.js").ModuleRequest} ModuleRequest */
 export default class Bundler {
@@ -105,7 +106,6 @@ export default class Bundler {
     console.log(chalk.green("Done Processing !"));
   }
 }
-
 if (process.argv.length === 2) {
   console.error("Usage : scalable <entryPath>");
   process.exit(1);
