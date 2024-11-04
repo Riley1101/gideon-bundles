@@ -32,17 +32,7 @@ console.log(_apple2.default);
 console.log(_nested2.default);
 (0, _orange.test)();
           },
-          {"./apple":"/test/apple.js","./orange":"/test/orange.js","./nested":"/test/nested/index.js"},
-        ],"/test/apple.js": [
-          function (require, module, exports) {
-            "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = "APPLE WORLD";
-          },
-          {},
+          {"./orange":"/test/orange.js","./nested":"/test/nested/index.js","./apple":"/test/apple.js"},
         ],"/test/orange.js": [
           function (require, module, exports) {
             "use strict";
@@ -64,6 +54,16 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = "Nested Module";
+          },
+          {},
+        ],"/test/apple.js": [
+          function (require, module, exports) {
+            "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = "APPLE WORLD";
           },
           {},
         ],})
