@@ -36,6 +36,9 @@ export class AssetNode {
     );
   }
 
+  /**
+   * @param {import("./resolver.js").ModuleRequest} processed
+   */
   setProcessed(processed) {
     return cache.put(`processed:${this.filePath}`, JSON.stringify(processed));
   }

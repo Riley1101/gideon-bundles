@@ -5,7 +5,6 @@ import { mkdirp } from "mkdirp";
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const appendFile = promisify(fs.appendFile);
-const mkdirCp = promisify(mkdirp);
 const stat = promisify(fs.stat);
 
 /**
@@ -23,4 +22,4 @@ export async function isDir(filePath) {
   }
 }
 
-export { readFile, writeFile, appendFile, mkdirCp };
+export { readFile, writeFile, appendFile, mkdirp };

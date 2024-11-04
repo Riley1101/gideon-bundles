@@ -2,7 +2,7 @@ import { AssetGraph } from "./assetGraph.js";
 import { AssetProcessor } from "./assetProcessor.js";
 import { QueueSync } from "./QueueSync.js";
 import { Resolver } from "./resolver.js";
-import { mkdirCp } from "./fsPromisified.js";
+import { appendFile, mkdirp, writeFile } from "./fsPromisified.js";
 import chalk from "chalk";
 
 /** @typedef {import("./resolver.js").ModuleRequest} ModuleRequest */
@@ -47,7 +47,51 @@ export default class Bundler {
   }
 
   async packagesAssetIntoBundles() {
-    await mkdirCp("./dist", undefined);
+    await mkdirp("./dist", undefined);
+    console.log("---------------------");
+    console.log(this.entryRequest, "entry");
+    console.log(this.assetGraph.entryAsset);
+    console.log("---------------------");
+    const topWrapper = `
+      (function(modules) {
+        function require(id) {
+          const [fn, mapping] = modules[id];
+
+          function localRequire(name) {
+            return require(mapping[name]);
+          }
+
+          const module = { exports : {} };
+
+          fn(localRequire, module, module.exports);
+
+          return module.exports;
+        }
+
+        require("${this.assetGraph.entryAsset.id}");
+      })({`;
+
+    await writeFile("dist/bundle.js", topWrapper, "utf8");
+
+    for (let [filePath, asset] of this.assetGraph.graph) {
+      if (filePath !== this.cwd) {
+        let { id, depMapping } = asset;
+        let p = await asset.getProcessed();
+        if (p) {
+          let moduleWrapper = `"${id}": [
+          function (require, module, exports) {
+            ${p.code.code}
+          },
+          ${JSON.stringify(depMapping)},
+        ],`;
+
+          await appendFile("dist/bundle.js", moduleWrapper);
+        }
+      }
+    }
+
+    await appendFile("dist/bundle.js", "})");
+    console.log(chalk.green("Done Bundling!"));
   }
 
   async bundle() {
@@ -65,5 +109,7 @@ export default class Bundler {
   }
 }
 
-let bundler = new Bundler("./test/index.js");
+let bundler = new Bundler(
+  "/home/arkar/projects/gideon-bundles/scalable/test/index.js",
+);
 bundler.bundle();

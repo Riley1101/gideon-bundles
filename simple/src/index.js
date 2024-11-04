@@ -33,7 +33,6 @@ const log = {
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
-const mkdir = promisify(mkdirp);
 let pId = 0;
 
 /**
