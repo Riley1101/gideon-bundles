@@ -1,0 +1,16 @@
+{
+  "name": "large-app",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ../scalable ./js/index.js",
+    "dev": "live-server ."
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/preset-env": "^7.26.0",
+    "live-server": "^1.2.2"
+  }
+}

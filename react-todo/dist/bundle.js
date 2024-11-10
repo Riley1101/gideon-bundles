@@ -1,83 +1,148 @@
+(function (modules) {
+  function require(id) {
+    if (!id) {
+      return;
+    }
+    const [fn, mapping] = modules[id];
 
-      (function(modules) {
-        function require(id) {
-          const [fn, mapping] = modules[id];
+    function localRequire(name) {
+      return require(mapping[name]);
+    }
 
-          function localRequire(name) {
-            return require(mapping[name]);
+    const module = { exports: {} };
+
+    fn(localRequire, module, module.exports);
+
+    return module.exports;
+  }
+
+  require("/index.js");
+})({
+  "/index.js": [
+    function (require, module, exports) {
+      "use strict";
+
+      var React = _interopRequireWildcard(require("react"));
+      var _App = require("./App");
+      console.log(_App);
+      var _reactDom = require("react-dom");
+      function _getRequireWildcardCache(e) {
+        if ("function" != typeof WeakMap) return null;
+        var r = new WeakMap(),
+          t = new WeakMap();
+        return (_getRequireWildcardCache = function (e) {
+          return e ? t : r;
+        })(e);
+      }
+      function _interopRequireWildcard(e, r) {
+        if (!r && e && e.__esModule) return e;
+        if (null === e || ("object" != typeof e && "function" != typeof e))
+          return { default: e };
+        var t = _getRequireWildcardCache(r);
+        if (t && t.has(e)) return t.get(e);
+        var n = { __proto__: null },
+          a = Object.defineProperty && Object.getOwnPropertyDescriptor;
+        for (var u in e)
+          if ("default" !== u && {}.hasOwnProperty.call(e, u)) {
+            var i = a ? Object.getOwnPropertyDescriptor(e, u) : null;
+            i && (i.get || i.set)
+              ? Object.defineProperty(n, u, i)
+              : (n[u] = e[u]);
           }
+        return (n.default = e), t && t.set(e, n), n;
+      }
+      (0, _reactDom.render)(document.getElementById("root")).render(
+        /*#__PURE__*/ React.createElement(
+          StrictMode,
+          null,
+          /*#__PURE__*/ React.createElement(_App.App, null),
+        ),
+      );
+    },
+    {
+      react: "/node_modules/react/index.js",
+      "react-dom": "/node_modules/react-dom/index.js",
+      "./App": "/App.js",
+    },
+  ],
+  "/node_modules/react/index.js": [
+    function (require, module, exports) {
+      "use strict";
 
-          const module = { exports : {} };
+      if (undefined === "production") {
+        module.exports = require("./cjs/react.production.min.js");
+      } else {
+        module.exports = require("./cjs/react.development.js");
+      }
+    },
+    {},
+  ],
+  "/node_modules/react-dom/index.js": [
+    function (require, module, exports) {
+      "use strict";
 
-          fn(localRequire, module, module.exports);
-
-          return module.exports;
+      function checkDCE() {
+        /* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
+        if (
+          typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ === "undefined" ||
+          typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE !== "function"
+        ) {
+          return;
         }
+        if (undefined !== "production") {
+          // This branch is unreachable because this function is only called
+          // in production, but the condition is true only in development.
+          // Therefore if the branch is still here, dead code elimination wasn't
+          // properly applied.
+          // Don't change the message. React DevTools relies on it. Also make sure
+          // this message doesn't occur elsewhere in this function, or it will cause
+          // a false positive.
+          throw new Error("^_^");
+        }
+        try {
+          // Verify that the code above has been dead code eliminated (DCE'd).
+          __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(checkDCE);
+        } catch (err) {
+          // DevTools shouldn't crash React, no matter what.
+          // We should still report in case we break this code.
+          console.error(err);
+        }
+      }
+      if (undefined === "production") {
+        // DCE check should happen before ReactDOM bundle executes so that
+        // DevTools can report bad minification during injection.
+        checkDCE();
+        module.exports = require("./cjs/react-dom.production.min.js");
+      } else {
+        module.exports = require("./cjs/react-dom.development.js");
+      }
+    },
+    {},
+  ],
+  "/App.js": [
+    function (require, module, exports) {
+      "use strict";
 
-        require("/src/index.js");
-      })({"/src/index.js": [
-          function (require, module, exports) {
-            "use strict";
-
-var _App = require("./App");
-var _react = require("react");
-var _client = require("react-dom/client");
-(0, _client.createRoot)(document.getElementById("root")).render(/*#__PURE__*/React.createElement(_react.StrictMode, null, /*#__PURE__*/React.createElement(_App.App, null)));
-          },
-          {"react":"/node_modules/.pnpm/react@18.3.1/node_modules/react/index.js","react-dom/client":"/node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modules/react-dom/client.js","./App":"/src/App.js"},
-        ],"/node_modules/.pnpm/react@18.3.1/node_modules/react/index.js": [
-          function (require, module, exports) {
-            'use strict';
-
-if (undefined === 'production') {
-  module.exports = require('./cjs/react.production.min.js');
-} else {
-  module.exports = require('./cjs/react.development.js');
-}
-          },
-          {},
-        ],"/node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modules/react-dom/client.js": [
-          function (require, module, exports) {
-            'use strict';
-
-var m = require('react-dom');
-if (undefined === 'production') {
-  exports.createRoot = m.createRoot;
-  exports.hydrateRoot = m.hydrateRoot;
-} else {
-  var i = m.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
-  exports.createRoot = function (c, o) {
-    i.usingClientEntryPoint = true;
-    try {
-      return m.createRoot(c, o);
-    } finally {
-      i.usingClientEntryPoint = false;
-    }
-  };
-  exports.hydrateRoot = function (c, h, o) {
-    i.usingClientEntryPoint = true;
-    try {
-      return m.hydrateRoot(c, h, o);
-    } finally {
-      i.usingClientEntryPoint = false;
-    }
-  };
-}
-          },
-          {},
-        ],"/src/App.js": [
-          function (require, module, exports) {
-            "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+      Object.defineProperty(exports, "__esModule", {
+        value: true,
+      });
+      exports.App = App;
+      var _react = _interopRequireDefault(require("react"));
+      function _interopRequireDefault(e) {
+        return e && e.__esModule ? e : { default: e };
+      }
+      function App() {
+        return /*#__PURE__*/ _react.default.createElement(
+          "div",
+          null,
+          /*#__PURE__*/ _react.default.createElement(
+            "h1",
+            null,
+            "Hello Gideon Bundles",
+          ),
+        );
+      }
+    },
+    { react: "/node_modules/react/index.js" },
+  ],
 });
-exports.App = App;
-var _react = _interopRequireDefault(require("react"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
-function App() {
-  return /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement("h1", null, "Hello Gideon Bundles"));
-}
-          },
-          {"react":"/node_modules/.pnpm/react@18.3.1/node_modules/react/index.js"},
-        ],})

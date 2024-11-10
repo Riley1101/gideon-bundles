@@ -6,6 +6,15 @@ module.exports = {
       {
         useBuiltIns: "entry",
         corejs: "3.22",
+
+        targets: {
+          browsers: [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version",
+            "last 1 edge version",
+          ],
+        },
       },
     ],
   ],

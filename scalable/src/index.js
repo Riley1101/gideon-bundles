@@ -53,6 +53,9 @@ export default class Bundler {
     const topWrapper = `
       (function(modules) {
         function require(id) {
+          if(!id){
+            return ;
+          }
           const [fn, mapping] = modules[id];
 
           function localRequire(name) {
